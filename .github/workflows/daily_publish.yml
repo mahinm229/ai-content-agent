@@ -1,0 +1,36 @@
+name: Daily AI Content Publishing
+
+on:
+  schedule:
+    - cron: '0 8 * * *'   # প্রতিদিন সকাল ৮টায় (UTC) / বাংলাদেশ সময় দুপুর ২টা
+  workflow_dispatch:      # ম্যানুয়ালি রান করাতে
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          playwright install chromium
+          playwright install-deps
+
+      - name: Run Agent
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          MEDIUM_EMAIL: ${{ secrets.MEDIUM_EMAIL }}
+          MEDIUM_PASS: ${{ secrets.MEDIUM_PASS }}
+          SUBSTACK_EMAIL: ${{ secrets.SUBSTACK_EMAIL }}
+          SUBSTACK_PASS: ${{ secrets.SUBSTACK_PASS }}
+          SUBSTACK_PUBLICATION: ${{ secrets.SUBSTACK_PUBLICATION }}
+          LISTVERSE_EMAIL: ${{ secrets.LISTVERSE_EMAIL }}
+          LISTVERSE_PASS: ${{ secrets.LISTVERSE_PASS }}
+        run: python agent.py
